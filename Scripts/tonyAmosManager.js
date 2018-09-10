@@ -968,7 +968,6 @@ function getDDLDay()
 
     if(parseInt(document.getElementById("ddlYearCSV").value) !== -1)
     {
-        console.log("this is right");
         xhttp.open("POST", "./TonyQuery.php", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("ddlYearValue=" + document.getElementById("ddlYearCSV").value + "&notdelete=" + 1);
@@ -1061,5 +1060,68 @@ function checkDBForMissedRecords()
 // Call to server for CSV generation, this is going to WriteToFile.php
 function generateCSV()
 {
+    getDataForCSVGeneration();
+}
 
+function getDataForCSVGeneration()
+{
+    console.log("Generating CSV for year " + start + "....");
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function()
+    {
+        if (this.readyState == 4 && this.status == 200)
+        {
+            var arrayOfPk = JSON.parse(this.responseText);
+            var chunksOfPk = chunkArray(arrayOfPk, 25); // Splitting the array of primary keys into chunks
+
+            callCSVGeneration(chunksOfPk, 0, true);
+        }
+    };
+
+    xhttp.open("POST", "./TonyQuery.php", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    /*xhttp.send("GET_PRIMARYKEYS_DAYS=" + true + "&yearCSV=" + document.getElementById("ddlYearCSV").value);*/
+    xhttp.send("GET_PRIMARYKEYS_DAYS=" + true + "&yearCSV=" + start);
+}
+
+function callCSVGeneration(arrayOfPrimaryKeys, index, firstTime)
+{
+    console.log("Sending request " + index + "....");
+    if(index < arrayOfPrimaryKeys.length)
+    {
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange = function()
+        {
+            if (this.readyState == 4 && this.status == 200)
+            {
+                console.log("Sent-\n" + arrayOfPrimaryKeys[index]);
+                console.log("Response-\n" + this.responseText);
+                index++;
+                callCSVGeneration(arrayOfPrimaryKeys, index, false);
+            }
+        };
+
+        xhttp.open("POST", "./WriteToFile.php", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        /*xhttp.send("arrayOfPrimaryKeys=" + JSON.stringify(arrayOfPrimaryKeys[index]) + "&year=" + document.getElementById("ddlYearCSV").value);*/
+        xhttp.send("arrayOfPrimaryKeys=" + JSON.stringify(arrayOfPrimaryKeys[index]) + "&year=" + start);
+    }
+
+    else
+    {
+        // Still more years to go
+        // This part is for automation from start to end (variables are at the top)
+        if(start < end)
+        {
+            start++;
+            getDataForCSVGeneration();
+        }
+
+        else
+        {
+            console.log("Completed all years.");
+        }
+    }
 }
