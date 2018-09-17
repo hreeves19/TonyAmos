@@ -10,7 +10,7 @@ var objBirdCodes;
 var totalCodesNotFound = 0;
 var arrayOfObjects = [];
 var start = 1985; // This is the incrementer for the automation loop
-var end = 2011; // Flag to stop the loop
+var end = 2001; // Flag to stop the loop
 var automated = true;
 
 //https://www.epochconverter.com/days/1993
