@@ -23,6 +23,7 @@
     <script type="text/javascript" src="../../TonyAmos/Scripts/tonyAmosManager.js"></script>
     <script type="text/javascript" src="../../TonyAmos/Library/jQuery-2.2.3/jquery-2.2.3.js"></script>
     <script type="text/javascript" src="../../TonyAmos/Library/jQuery-2.2.3/jquery-2.2.3.min.js"></script>
+    <script type="text/javascript" src="../../TonyAmos/Scripts/numericalFilesInterpreter.js"></script>
 </head>
 <!-- END HEADER -->
 <!-- HTML BODY -->
@@ -207,6 +208,11 @@
 
             <div>
                 <p id="databaseResponse"></p>
+            </div>
+
+            <div>
+                <p>Use this section for interpreting the numerical files:</p>
+                <input type="file" id="btnUploadNumericalFile" multiple size="50" onchange="btnUploadNumericalFiles()">
             </div>
         </div>
     </div>

@@ -5,7 +5,7 @@
  * Date: 8/16/2018
  * Time: 10:22 AM
  */
-require_once 'C:/xampp2/htdocs/TonyAmos/Classes/DBHelper.php';
+require_once 'C:/xampp/htdocs/TonyAmos/Classes/DBHelper.php';
 
 class TonyDBHelper
 {
@@ -13,6 +13,7 @@ class TonyDBHelper
     private $arrayDays;
     private $arrayDaysMileMarker;
     private $arrayOfBirdCodes;
+    private $arrayOfBirdIds;
     private $allFiles;
     public $collection = "BCHobs1";
 
@@ -34,6 +35,7 @@ class TonyDBHelper
         $this->arrayDays = array();
         $this->arrayDaysMileMarker = array();
         $this->arrayOfBirdCodes = array();
+        $this->arrayOfBirdIds = array();
     }
 
     /**
@@ -42,6 +44,14 @@ class TonyDBHelper
     public function getDbhelper()
     {
         return $this->dbhelper;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getArrayOfBirdIds()
+    {
+        return $this->arrayOfBirdIds;
     }
 
     /**
@@ -390,10 +400,46 @@ class TonyDBHelper
         return true;
     }
 
+    public function GET_ALL_BIRD_IDS($dbName)
+    {
+        // Getting connection
+        $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
+
+        // Checking to see if the connection failed
+        if($mysqli->connect_errno)
+        {
+            echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+            return false;
+        }
+
+        // Creating select statement
+        $sql = "SELECT codeID FROM birdcodes";
+        $result = $mysqli->query($sql);
+
+        if ($result->num_rows > 0)
+        {
+
+            // output data of each row
+            while($row = $result->fetch_assoc())
+            {
+                array_push($this->arrayOfBirdIds, $row["codeID"]);
+            }
+        }
+
+        else
+        {
+            echo "0 results";
+        }
+
+        // Closing db connection
+        mysqli_close($mysqli);
+        return true;
+    }
+
     public function GET_YEAR_FILE($year)
     {
         /*C:/xampp2/htdocs/BandoCat/tonyamos/SortedData/BCHobs2/BDZ$year*/
-        $dir = "C:/xampp2/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year";
+        $dir = "C:/xampp/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year";
 
         // Open a directory, and read its contents
         if (is_dir($dir))
@@ -453,7 +499,7 @@ class TonyDBHelper
     public function GET_DDL_FILES_BY_YEAR($year)
     {
         // Path to the directory
-        $dir = "C:/xampp2/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year";
+        $dir = "C:/xampp/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year";
 
         // Open a directory, and read its contents
         if (is_dir($dir))
@@ -492,7 +538,7 @@ class TonyDBHelper
         {
             foreach($this->arrayDays as $filename)
             {
-                $dir = "C:/xampp2/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year/$filename";
+                $dir = "C:/xampp/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year/$filename";
 
                 // Checking to see if file name is correct or not, skipping the . and ..
                 if(preg_match('/\w/', $filename) !== 1)
@@ -541,7 +587,7 @@ class TonyDBHelper
     public function GET_MILE_MARKER_FILE_FROM_DAY($year, $filename)
     {
         // Directory to the day
-        $dir = "C:/xampp2/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year/$filename";
+        $dir = "C:/xampp/htdocs/TonyAmos/Data/SortedData/$this->collection/BDZ$year/$filename";
 
         // Open a directory, and read its contents
         if (is_dir($dir))
@@ -582,7 +628,7 @@ class TonyDBHelper
         while($year <= $endYear)
         {
             // Directory to the first year
-            $dir = "C:/xampp2/htdocs/TonyAmos/Data/SortedData/$this->collection/BCHobs2/BDZ$year";
+            $dir = "C:/xampp/htdocs/TonyAmos/Data/SortedData/$this->collection/BCHobs2/BDZ$year";
 
             // Open a directory, and read its contents
             if (is_dir($dir))

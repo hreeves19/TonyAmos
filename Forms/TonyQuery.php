@@ -8,7 +8,7 @@
 include '../../TonyAmos/Classes/DBHelper.php';
 include '../../TonyAmos/Classes/TonyDBHelper.php';
 $DB = new TonyDBHelper();
-$dbName = "bchobs1";
+$dbName = "tonyamosdb";
 
 // Checking to see if the parameters are set
 if(isset($_POST["ids"]) && isset($_POST["birdCode"]) && isset($_POST["birdCodeDescription"]))
@@ -229,6 +229,20 @@ else if(isset($_POST["deleteRecordDay"]))
 else if(isset($_POST["getFilesFromYear"]))
 {
     $DB->GET_DDL_FILES_BY_YEAR($_POST["getFilesFromYear"]);
+}
+
+else if(isset($_POST["getBirdIds"]))
+{
+    if($DB->GET_ALL_BIRD_IDS($dbName))
+    {
+        $arrayOfBirdIds = $DB->getArrayOfBirdIds();
+        echo json_encode($arrayOfBirdIds);
+    }
+
+    else
+    {
+        echo "Something went wrong with selecting the bird codes.";
+    }
 }
 
 // To insert a single file to DB
