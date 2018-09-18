@@ -58,7 +58,7 @@ function processNumericalFiles(file)
 {
     console.log(file.name);
     reader = new FileReader();
-    var regexFindMileMarkers = /(240\d\d)/gm;
+    var regexFindMileMarkers = /(240[4-6]\d)/gm;
     var originalNumMileMarkers;
 
     reader.onload = function(e)
@@ -74,7 +74,8 @@ function processNumericalFiles(file)
 
             // Separate mile marker text
             mileMarkersWithText = getMileMarkerText(originalFileText, mileMarkers);
-            console.log(birdids);
+            console.log(mileMarkersWithText);
+            recreateFile(mileMarkersWithText, mileMarkers, originalFileText);
         }
 
         else
@@ -87,8 +88,209 @@ function processNumericalFiles(file)
     reader.readAsText(file);
 }
 
+function recreateFile(numericalFile, numericalMileMarkers, originalFileText)
+{
+    var newfile = "";
+    var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s\d{2}\s)|(\d{2})/gm;
+    var regexCodeDoubleObserved = /(\d{3}[4,5]\d\s*[4,5]\d\s)/gm; // Regex code when there is a three digit code with 10 or more observed amount
+    var regexCodeObserved = /(\d{3}[4,5]\d\s)/gm; // Regex code when there is a three digit code with an observed amount between 0 and 9
+    var regexCodeTripleDigit = /(\d{3})/gm; // Most standard, just a normal 3 digit code with no observed amount
+    var regexCodeTwoDigitObserved = /(\d{2}\s\d{2}\s)/gm; // Regex code when there is a two digit code with an observed amount from 0 to 9
+    var regexCodeTwoDigit = /(\d{2})/gm; // Standard for 2 digit code with no observations
+
+    // converting birdids to ints instead of strings
+    for(var key in birdids)
+    {
+        birdids[key] = parseInt(birdids[key]);
+    }
+
+
+    if(numericalFile != null && numericalFile.length > 0)
+    {
+        for(var i = 0; i < numericalFile.length; i++)
+        {
+            // Replacing original text with whats extracted
+            originalFileText = originalFileText.replace(numericalFile[i], "");
+
+            if(numericalFile[i] === "")
+            {
+                // Do nothing
+            }
+
+            else
+            {
+                // Replacing new lines and mile markers in numericalText and getting mile marker into Tony's original format * #
+                var numericalText = numericalFile[i];
+                var stringMileMarker = parseInt(numericalText) - 24049;
+                stringMileMarker = "* " + stringMileMarker;
+                numericalText = numericalText.replace(numericalMileMarkers[i], "");
+                numericalText = numericalText.replace(/\r?\n|\r/g, "");
+
+                // Getting array of codes
+                var arrayOfIds = numericalText.match(bigRegex);
+                newfile += stringMileMarker;
+                newfile += convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit,
+                    regexCodeTwoDigitObserved, regexCodeTwoDigit);
+            }
+        }
+    }
+
+    if(originalFileText !== "")
+    {
+        console.log("What's left: \n" + originalFileText);
+    }
+
+    console.log("New file: \n" + newfile);
+}
+
+function convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit, regexCodeTwoDigitObserved, regexCodeTwoDigit)
+{
+    var newCodesAsStrings = "";
+    var OBSERVED_BASE = 48;
+
+    for(var i = 0; i < arrayOfIds.length; i++)
+    {
+        var numericalCode = arrayOfIds[i];
+
+        if(numericalCode.match(regexCodeDoubleObserved))
+        {
+            var observedBirdCode = numericalCode.match(/\d{3}/); // Getting 3 digit code from numerical code
+            numericalCode = numericalCode.replace(observedBirdCode, "");
+
+            // Getting double digit numbers
+            var twoDigitNumber = numericalCode.match(/\d{2}/gm);
+            twoDigitNumber = twoDigitNumber.map(Number);
+            twoDigitNumber[0] = parseInt(twoDigitNumber[0]) - OBSERVED_BASE;
+            twoDigitNumber[1] = parseInt(twoDigitNumber[1]) - OBSERVED_BASE;
+            twoDigitNumber = twoDigitNumber.join();
+            twoDigitNumber = twoDigitNumber.replace(",", "");
+
+            // Finding the birdcode
+            var position = birdids.indexOf(parseInt(observedBirdCode));
+            position = parseInt(position);
+            observedBirdCode = birdcodes[position];
+
+            // Adding spaces to the bird codes that have less than 4 spaces
+            observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+
+            var fullCodeWithObs = "";
+            fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
+            newCodesAsStrings += fullCodeWithObs;
+            console.log("Translation: " + newCodesAsStrings)
+        }
+
+        else if(numericalCode.match(regexCodeObserved))
+        {
+            newCodesAsStrings += translateThreeDigitCodeObs(numericalCode, OBSERVED_BASE);
+            console.log("regexCodeObserved translation: \n" + newCodesAsStrings);
+        }
+
+        else if(numericalCode.match(regexCodeTripleDigit))
+        {
+            console.log("regexCodeTripleDigit\n" + numericalCode);
+            newCodesAsStrings += translateThreeDigitCodeNoObs(numericalCode, OBSERVED_BASE);
+        }
+
+        else if(numericalCode.match(regexCodeTwoDigitObserved))
+        {
+            console.log("regexCodeTwoDigitObserved\n" + numericalCode);
+        }
+
+        else if(numericalCode.match(regexCodeTwoDigit))
+        {
+            console.log("regexCodeTwoDigit\n" + numericalCode);
+
+        }
+    }
+
+    return newCodesAsStrings;
+}
+
+function translateThreeDigitCodeNoObs(numericalCode, OBSERVED_BASE)
+{
+    var resultString = "";
+
+    var observedBirdCode = numericalCode.match(/\d{3}/);
+
+    // Finding the birdcode
+    var position = birdids.indexOf(parseInt(observedBirdCode));
+    position = parseInt(position);
+    observedBirdCode = birdcodes[position];
+
+    observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+
+    resultString = observedBirdCode;
+
+    console.log("resultstringnoobs: \n" + resultString);
+
+    return resultString;
+}
+
+function translateThreeDigitCodeObs(numericalCode, OBSERVED_BASE)
+{
+    var resultString = "";
+
+    // Getting 3 digit code and replacing original text with nothing
+    var observedBirdCode = numericalCode.match(/\d{3}/);
+    numericalCode = numericalCode.replace(observedBirdCode, "");
+
+    // Finding the birdcode
+    var position = birdids.indexOf(parseInt(observedBirdCode));
+    position = parseInt(position);
+    observedBirdCode = birdcodes[position];
+
+    // Getting number observed
+    var observedAmount = numericalCode.match(/\d{2}/);
+    observedAmount = observedAmount.map(Number);
+    observedAmount = parseInt(observedAmount) - OBSERVED_BASE;
+
+    // This is probably a code, not an observation amount
+    if(observedAmount < 0)
+    {
+        var additionalBirdCode = numericalCode.match(/\d{2}/);
+        position = birdids.indexOf(parseInt(additionalBirdCode));
+        position = parseInt(position);
+        additionalBirdCode = birdcodes[position];
+        additionalBirdCode = formatCodeWithSpaces(additionalBirdCode);
+        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+        resultString = observedBirdCode + additionalBirdCode;
+
+        console.log("resultstringwithcorrection: \n" + resultString);
+    }
+
+    else
+    {
+        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+
+        resultString = observedBirdCode + observedAmount;
+
+        console.log("resultstring: \n" + resultString);
+    }
+
+    return resultString;
+}
+
+function formatCodeWithSpaces(observedBirdCode)
+{
+    // Adding spaces to the bird codes that have less than 4 spaces
+    if(observedBirdCode.length === 2)
+    {
+        observedBirdCode = observedBirdCode + "0";
+        observedBirdCode = observedBirdCode.replace("0", '  ');
+    }
+
+    else if(observedBirdCode.length === 3)
+    {
+        observedBirdCode = observedBirdCode + "0";
+        observedBirdCode = observedBirdCode.replace("0", ' ');
+    }
+
+    return observedBirdCode;
+}
+
 function getMileMarkerText(text, mileMarkers)
 {
+    console.log("milemarkers\n" + mileMarkers);
     var result = [];
 
     for(var i = 0; i < mileMarkers.length; i++)
@@ -100,7 +302,7 @@ function getMileMarkerText(text, mileMarkers)
 
         else
         {
-            result.push(text.slice(text.search(mileMarkers[mileMarkers.length - 1]), text.search(/(239\d\d)/)));
+            result.push(text.slice(text.search(mileMarkers[mileMarkers.length - 1]), text.search(/(239\d\d)|(24032)/)));
         }
     }
 
