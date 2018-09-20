@@ -11,7 +11,7 @@ var totalCodesNotFound = 0;
 var arrayOfObjects = [];
 var start = 1985; // This is the incrementer for the automation loop
 var end = 2001; // Flag to stop the loop
-var automated = true;
+var automated = false;
 
 //https://www.epochconverter.com/days/1993
 
@@ -511,11 +511,11 @@ function callPopulateBirdCodesPost(ids, birdCode, birdCodeDescription)
  ********************************************************************/
 function getYearFileNames(tempYear)
 {
-    /*var selectTag = document.getElementById("ddlYears");
+    var selectTag = document.getElementById("ddlYears");
     var year = selectTag.options[selectTag.selectedIndex].value;
-    year = parseInt(year);*/
-    var year = parseInt(tempYear);
-    console.log("Year: " + year);
+    year = parseInt(year);
+    /*var year = parseInt(tempYear);
+    console.log("Year: " + year);*/
 
 
     if(year === -1)

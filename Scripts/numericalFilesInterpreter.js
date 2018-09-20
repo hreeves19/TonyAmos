@@ -75,7 +75,7 @@ function processNumericalFiles(file)
             // Separate mile marker text
             mileMarkersWithText = getMileMarkerText(originalFileText, mileMarkers);
             console.log(mileMarkersWithText);
-            recreateFile(mileMarkersWithText, mileMarkers, originalFileText);
+            recreateFile(mileMarkersWithText, mileMarkers, originalFileText, file);
         }
 
         else
@@ -88,14 +88,14 @@ function processNumericalFiles(file)
     reader.readAsText(file);
 }
 
-function recreateFile(numericalFile, numericalMileMarkers, originalFileText)
+function recreateFile(numericalFile, numericalMileMarkers, originalFileText, file)
 {
     var newfile = "";
-    var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s\d{2}\s)|(\d{2})/gm;
+    var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s[4,5]\d\s*)|(\d{2})/gm;
     var regexCodeDoubleObserved = /(\d{3}[4,5]\d\s*[4,5]\d\s)/gm; // Regex code when there is a three digit code with 10 or more observed amount
     var regexCodeObserved = /(\d{3}[4,5]\d\s)/gm; // Regex code when there is a three digit code with an observed amount between 0 and 9
     var regexCodeTripleDigit = /(\d{3})/gm; // Most standard, just a normal 3 digit code with no observed amount
-    var regexCodeTwoDigitObserved = /(\d{2}\s\d{2}\s)/gm; // Regex code when there is a two digit code with an observed amount from 0 to 9
+    var regexCodeTwoDigitObserved = /(\d{2}\s[4,5]\d\s*)/gm; // Regex code when there is a two digit code with an observed amount from 0 to 9
     var regexCodeTwoDigit = /(\d{2})/gm; // Standard for 2 digit code with no observations
 
     // converting birdids to ints instead of strings
@@ -141,6 +141,7 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText)
     }
 
     console.log("New file: \n" + newfile);
+    createNewFile(newfile, file.name);
 }
 
 function convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit, regexCodeTwoDigitObserved, regexCodeTwoDigit)
@@ -176,34 +177,70 @@ function convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCode
             var fullCodeWithObs = "";
             fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
             newCodesAsStrings += fullCodeWithObs;
-            console.log("Translation: " + newCodesAsStrings)
         }
 
         else if(numericalCode.match(regexCodeObserved))
         {
             newCodesAsStrings += translateThreeDigitCodeObs(numericalCode, OBSERVED_BASE);
-            console.log("regexCodeObserved translation: \n" + newCodesAsStrings);
         }
 
         else if(numericalCode.match(regexCodeTripleDigit))
         {
-            console.log("regexCodeTripleDigit\n" + numericalCode);
             newCodesAsStrings += translateThreeDigitCodeNoObs(numericalCode, OBSERVED_BASE);
         }
 
         else if(numericalCode.match(regexCodeTwoDigitObserved))
         {
-            console.log("regexCodeTwoDigitObserved\n" + numericalCode);
+            newCodesAsStrings += translateTwoDigitCodes(numericalCode, OBSERVED_BASE, true);
         }
 
         else if(numericalCode.match(regexCodeTwoDigit))
         {
-            console.log("regexCodeTwoDigit\n" + numericalCode);
-
+            newCodesAsStrings += translateTwoDigitCodes(numericalCode, OBSERVED_BASE, false);
         }
     }
 
     return newCodesAsStrings;
+}
+
+// obs is a boolean flag, true means there is an observed amount, false mean there isn't one
+function translateTwoDigitCodes(numericalCode, OBSERVED_BASE, obs)
+{
+    var resultString = "";
+    var observedBirdCode;
+    var amountObserved;
+    var position;
+
+    // Checking to see if there is an observation
+    if(obs)
+    {
+        // Pulling the first two digit number
+        observedBirdCode = numericalCode.match(/\d{2}/);
+
+        // Getting the second two digit number
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        amountObserved = numericalCode.match(/\d{2}/);
+
+        // Getting birdcode
+        position = birdids.indexOf(parseInt(observedBirdCode));
+        observedBirdCode = birdcodes[position];
+        amountObserved = parseInt(amountObserved) - OBSERVED_BASE;
+        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+
+        resultString = observedBirdCode + amountObserved;
+    }
+
+    else
+    {
+        // Pulling the first two digit number
+        observedBirdCode = numericalCode.match(/\d{2}/);
+        position = birdids.indexOf(parseInt(observedBirdCode));
+        observedBirdCode = birdcodes[position];
+        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+        resultString = observedBirdCode;
+    }
+
+    return resultString;
 }
 
 function translateThreeDigitCodeNoObs(numericalCode, OBSERVED_BASE)
@@ -261,7 +298,6 @@ function translateThreeDigitCodeObs(numericalCode, OBSERVED_BASE)
     else
     {
         observedBirdCode = formatCodeWithSpaces(observedBirdCode);
-
         resultString = observedBirdCode + observedAmount;
 
         console.log("resultstring: \n" + resultString);
@@ -302,7 +338,7 @@ function getMileMarkerText(text, mileMarkers)
 
         else
         {
-            result.push(text.slice(text.search(mileMarkers[mileMarkers.length - 1]), text.search(/(239\d\d)|(24032)/)));
+            result.push(text.slice(text.search(mileMarkers[mileMarkers.length - 1]), text.search(/(239\d\d)|(239\s*32)|(24032)/)));
         }
     }
 
@@ -341,6 +377,32 @@ function getBirdIds()
     xhttp.open("POST", "./TonyQuery.php", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("getBirdIds=" + 1);
+}
+
+function createNewFile(text, filename)
+{
+    var xhttp = new XMLHttpRequest();
+    var dir = "C:/xampp/htdocs/TonyAmos/Data/OriginalData/BCHobs2/BIRDRAW/BDZ84";
+
+    xhttp.onreadystatechange = function()
+    {
+        if (this.readyState == 4 && this.status == 200)
+        {
+            if(this.responseText)
+            {
+                console.log("File has been created.");
+            }
+
+            else
+            {
+                console.log("File has failed to be created.");
+            }
+        }
+    };
+
+    xhttp.open("POST", "./WriteToFile.php", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("text=" + text + "&filetype=" + "txt" + "&path=" + dir + "&filename=" + filename);
 }
 
 $(document).ready(function ()

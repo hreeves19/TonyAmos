@@ -28,18 +28,19 @@ if(isset($_POST['arrayOfText']) && isset($_POST['filename']) && isset($_POST['ar
     $collection = $_POST["collection"];
     $counter = 0;
     $regexGetMileMarkers = "/\\* \\d/";
+    $newArrayOfMileMarkers = [];
 
     // Make sure that you change these to the right year
-    $year = "BDZ2000";
-    $orginalYear = "BDZ00";
+    $year = "BDZ1984";
+    $orginalYear = "BDZ84";
+
 
 
     // Making a new directory for the day of year
-    mkdir("C:/xampp2/htdocs/TonyAmos/Data/SortedDataSortedData/$collection/$year/$filename");
-    $originalFilePath = "C:/xampp2/htdocs/TonyAmos/Data/Copy/BCHobs1/$collection/BIRDRAW/$orginalYear/$filename";
-    $originalfile = file_get_contents("C:/xampp2/htdocs/TonyAmos/Data/OriginalData/$collection/BIRDRAW/$orginalYear/$filename");
+    mkdir("C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename");
+    $originalFilePath = "C:/xampp/htdocs/TonyAmos/Data/Copy/$collection/BIRDRAW/$orginalYear/$filename";
+    $originalfile = file_get_contents("C:/xampp/htdocs/TonyAmos/Data/OriginalData/$collection/BIRDRAW/$orginalYear/$filename");
     $originalfile = preg_replace('/\r?\n|\r/', "", $originalfile);
-    $newArrayOfMileMarkers = [];
 
     // Removing text before mile marker 0, if there is one
     $position = strpos($originalfile, "* 0");
@@ -75,14 +76,14 @@ if(isset($_POST['arrayOfText']) && isset($_POST['filename']) && isset($_POST['ar
         if(array_search($mileMarkers[$counter], $newArrayOfMileMarkers) !== false)
         {
             // Writing mile marker to file
-            file_put_contents("C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt", $text);
+            file_put_contents("C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt", $text);
         }
 
         // For regular mile markers
         else
         {
             // Adding mile marker to an array, this will be used to check for duplicates
-            file_put_contents("C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter].txt", $text);
+            file_put_contents("C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter].txt", $text);
             array_push($newArrayOfMileMarkers, $mileMarkers[$counter]);
         }
 
@@ -96,35 +97,35 @@ if(isset($_POST['arrayOfText']) && isset($_POST['filename']) && isset($_POST['ar
             if(!empty($matches[0]))
             {
                 // Duplicate Files
-                if(file_exists("C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt"))
+                if(file_exists("C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt"))
                 {
                     array_push($arrayOfErrorMessage, "Negative mile marker $matches[0] found in $filename at mile marker $counter" . "_M$mileMarkers[$counter]_DUP. " .
-                        "In C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt");
+                        "In C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt");
                 }
 
                 // Regular files
                 else
                 {
                     array_push($arrayOfErrorMessage, "Negative mile marker $matches[0] found in $filename at mile marker M$mileMarkers[$counter]. " .
-                        "In C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter].txt");
+                        "In C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter].txt");
                 }
             }
 
             else
             {
                 // Duplicate Files
-                if(file_exists("C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt"))
+                if(file_exists("C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt"))
                 {
                     // var regexNegativeMileMarkers = /(\*\s*-\d\d)|(\*\s*-\d)|(\*)/gm;
                     array_push($arrayOfErrorMessage, "There is an invalid mile marker in $filename at mile marker $counter" . "_M$mileMarkers[$counter]_DUP. " .
-                        "In C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt");
+                        "In C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter]_DUP.txt");
                 }
 
                 // Regular files
                 else
                 {
                     array_push($arrayOfErrorMessage, "There is an invalid mile marker in $filename at mile marker M$mileMarkers[$counter]. " .
-                        "In C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter].txt");
+                        "In C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/$counter" . "_M$mileMarkers[$counter].txt");
                 }
             }
         }
@@ -143,14 +144,14 @@ if(isset($_POST['arrayOfText']) && isset($_POST['filename']) && isset($_POST['ar
             if(strpos($value, "added") !== false)
             {
                 $firstMileMarker = $mileMarkers[0];
-                $firstMileMarkerText = file_get_contents("C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/0_M$firstMileMarker.txt");
+                $firstMileMarkerText = file_get_contents("C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename/0_M$firstMileMarker.txt");
                 $firstMileMarkerText = str_replace("* $firstMileMarker", "", $firstMileMarkerText); // Stripping mile marker from text to match the original file's text
 
                 // Overwriting original file
                 $originalfile = str_replace($firstMileMarkerText, "", $originalfile);
             }
-            $errorMessage = "$value In C:/xampp2/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename ";
-            file_put_contents("C:/xampp2/htdocs/TonyAmos/Data/Errors/$collection/ErrorLog.txt", $errorMessage . $date . PHP_EOL, FILE_APPEND);
+            $errorMessage = "$value In C:/xampp/htdocs/TonyAmos/Data/SortedData/$collection/$year/$filename ";
+            file_put_contents("C:/xampp/htdocs/TonyAmos/Data/Errors/$collection/ErrorLog.txt", $errorMessage . $date . PHP_EOL, FILE_APPEND);
         }
     }
 
@@ -162,7 +163,7 @@ if(isset($_POST['arrayOfText']) && isset($_POST['filename']) && isset($_POST['ar
     {
         array_push($arrayOfErrorMessage, "File still has data in it. In $originalFilePath ");
         $errorMessage = "File still has data in it. In $originalFilePath ";
-        file_put_contents("C:/xampp2/htdocs/TonyAmos/Data/Errors/$collection/ErrorLog.txt", $errorMessage . $date . PHP_EOL, FILE_APPEND);
+        file_put_contents("C:/xampp/htdocs/TonyAmos/Data/Errors/$collection/ErrorLog.txt", $errorMessage . $date . PHP_EOL, FILE_APPEND);
     }
 }
 
@@ -175,7 +176,7 @@ else if(isset($_POST["arrayOfPrimaryKeys"]) && isset($_POST["year"]))
 
     $csvColumns = "\"bc_ID\",\"birdcode\",\"bc_observedamount\",\"bc_distance\",\"bc_yearday\",\"bc_julianday\",\"milemarker\",\"bc_duplicate_milemarker\"\n";
 
-    $dir = "C:/xampp2/htdocs/TonyAmos/CSV/BCHobs2/$year";
+    $dir = "C:/xampp/htdocs/TonyAmos/CSV/BCHobs2/$year";
     mkdir($dir);
 
     foreach($arrayOfPrimaryKeys as $day)
@@ -210,6 +211,26 @@ else if(isset($_POST["arrayOfPrimaryKeys"]) && isset($_POST["year"]))
         file_put_contents($filepath, $csvAsString);
 
         $csvAsString = "";
+    }
+}
+
+else if(isset($_POST["text"]) && isset($_POST["filetype"]) && isset($_POST["path"]) && isset($_POST["filename"]))
+{
+    $text = $_POST["text"];
+    $filetype = $_POST["filetype"];
+    $path = $_POST["path"];
+    $filename = $_POST["filename"];
+
+    $path .= "/$filename";
+
+    if(file_put_contents($path, $text))
+    {
+        echo true;
+    }
+
+    else
+    {
+        echo false;
     }
 }
 

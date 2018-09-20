@@ -15,7 +15,7 @@ class TonyDBHelper
     private $arrayOfBirdCodes;
     private $arrayOfBirdIds;
     private $allFiles;
-    public $collection = "BCHobs1";
+    public $collection = "BCHobs2";
 
     /**
      * @return mixed
@@ -449,7 +449,7 @@ class TonyDBHelper
                 // File is a string with the name of the folder of days
                 while (($file = readdir($dh)) !== false)
                 {
-                    /*echo "filename:" . $file . "<br>";*/
+                    echo "filename:" . $file . "<br>";
                     array_push($this->arrayDays, $file);
                 }
                 closedir($dh);
