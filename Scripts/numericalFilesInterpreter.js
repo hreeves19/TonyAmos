@@ -1,6 +1,21 @@
+// Global arrays, these contain the bird codes and the ids
 var birdcodes;
 var birdids;
 
+/********************************************************************
+ * Function Name: Button Upload Numerical Files
+ *
+ * Description:
+ * This function is used to upload only the numerical files that are found
+ * in BDZ1984. These files were all numeric and they need to be translated
+ * to Tony's file formatting.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * None
+ ********************************************************************/
 function btnUploadNumericalFiles()
 {
     // Initializing local variables and getting the Choose File button
@@ -54,17 +69,35 @@ function btnUploadNumericalFiles()
     document.getElementById("result").innerHTML = txt;
 }
 
+/********************************************************************
+ * Function Name: Process Numerical Files
+ *
+ * Description:
+ * This function is used to process the files that are uploaded from
+ * btnUploadNumericalFiles function. All this really does is read the
+ * file then sends it to recreateFile function.
+ *
+ * Parameters:
+ * file - file object - The file is one of the numerical file found
+ * in BDZ1984, but the user must upload this file.
+ *
+ * Return:
+ * None
+ ********************************************************************/
 function processNumericalFiles(file)
 {
+    // Creating local variables
     console.log(file.name);
     reader = new FileReader();
-    var regexFindMileMarkers = /(240[4-6]\d)/gm;
+    var regexFindMileMarkers = /(240[4-6]\d)/gm; // Regex that gets all the mile markers
     var originalNumMileMarkers;
 
+    // This allows us to read the contents of the folder uploaded once reader.readAsText(file) executes
     reader.onload = function(e)
     {
+        // Storing the original file text into a variable
         var originalFileText = reader.result;
-        var mileMarkers = originalFileText.match(regexFindMileMarkers);
+        var mileMarkers = originalFileText.match(regexFindMileMarkers); // Creating an array of milemarkers using match
         var mileMarkersWithText = [];
 
         // Checking to see if there are mile markers
@@ -74,8 +107,7 @@ function processNumericalFiles(file)
 
             // Separate mile marker text
             mileMarkersWithText = getMileMarkerText(originalFileText, mileMarkers);
-            console.log(mileMarkersWithText);
-            recreateFile(mileMarkersWithText, mileMarkers, originalFileText, file);
+            recreateFile(mileMarkersWithText, mileMarkers, originalFileText, file); // Recreate the file
         }
 
         else
@@ -88,15 +120,43 @@ function processNumericalFiles(file)
     reader.readAsText(file);
 }
 
+/********************************************************************
+ * Function Name: Process Bird Codes text file
+ *
+ * Description:
+ * This function is used to recreate the file into Tony's original format.
+ * Basically, it loops through each mile marker and calls a function
+ * to convert the numerical string to Tony's formatting.
+ *
+ * Parameters:
+ * numericalFile - array of strings - elements contain the mile markers with their respective codes
+ *
+ * numericalMileMarkers - array of strings - only contains the mile markers
+ *
+ * originalFileText - string - the original file text that was read from the file
+ *
+ * file - file object - The file is one of the numerical file found
+ * in BDZ1984, but the user must upload this file.
+ *
+ * Return:
+ * None
+ ********************************************************************/
 function recreateFile(numericalFile, numericalMileMarkers, originalFileText, file)
 {
+    // Big regex has all of the other ones but is combined into one
+    // If you need to change the regex for any of them make sure you update
+    // big regex or you will see some weird results
     var newfile = "";
-    var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s[4,5]\d\s*)|(\d{2})/gm;
+    var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s+[4,5]\d\s+[4,5]\d\s)|(\d{2}\s[4,5]\d\s*)|(\d{2})|(\d{1}\s+[4,5]\d\s+[4,5]\d)|(\d{1}\s+[4,5]\d)|(\d[1-9])/gm;
+    //var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s[4,5]\d\s*)|(\d{2})/gm;
+    //(\d{2}\s*[4,5]\d)
     var regexCodeDoubleObserved = /(\d{3}[4,5]\d\s*[4,5]\d\s)/gm; // Regex code when there is a three digit code with 10 or more observed amount
     var regexCodeObserved = /(\d{3}[4,5]\d\s)/gm; // Regex code when there is a three digit code with an observed amount between 0 and 9
     var regexCodeTripleDigit = /(\d{3})/gm; // Most standard, just a normal 3 digit code with no observed amount
     var regexCodeTwoDigitObserved = /(\d{2}\s[4,5]\d\s*)/gm; // Regex code when there is a two digit code with an observed amount from 0 to 9
     var regexCodeTwoDigit = /(\d{2})/gm; // Standard for 2 digit code with no observations
+    
+    console.log(numericalFile);
 
     // converting birdids to ints instead of strings
     for(var key in birdids)
@@ -104,7 +164,7 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText, fil
         birdids[key] = parseInt(birdids[key]);
     }
 
-
+    // Checking to see array exists and contains information
     if(numericalFile != null && numericalFile.length > 0)
     {
         for(var i = 0; i < numericalFile.length; i++)
@@ -112,6 +172,7 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText, fil
             // Replacing original text with whats extracted
             originalFileText = originalFileText.replace(numericalFile[i], "");
 
+            // Empty
             if(numericalFile[i] === "")
             {
                 // Do nothing
@@ -126,7 +187,9 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText, fil
                 numericalText = numericalText.replace(numericalMileMarkers[i], "");
                 numericalText = numericalText.replace(/\r?\n|\r/g, "");
 
-                // Getting array of codes
+                // Getting array of codes and translating the string to Tony's format, then save it.
+                // Eventually, newfile will contain all mile markers and bird codes in Tony's format. Its
+                // what the original file should have looked like. This is as accurate as we are going to get.
                 var arrayOfIds = numericalText.match(bigRegex);
                 newfile += stringMileMarker;
                 newfile += convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit,
@@ -141,9 +204,45 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText, fil
     }
 
     console.log("New file: \n" + newfile);
-    createNewFile(newfile, file.name);
+    createNewFile(newfile, file.name); //  Go to create a new file and save it on the server
 }
 
+/********************************************************************
+ * Function Name: Convert Numerical String to Tony's Format
+ *
+ * Description:
+ * This function is used to convert the weird string of numbers to Tony's
+ * original formatting. It does this with the help of translation functions.
+ * There are 5 cases that we need to look for. These cases are handled
+ * and defined by the regex parameters that are sent.
+ *
+ * Parameters:
+ * arrayOfIds - array of strings - elements contain the individual numeric
+ * codes. All cases are found in this array because we used bigregex to
+ * match them. However, the arrayOfIds is not of the whole numerical text, but
+ * instead its only the numerical text of whatever mile marker its associated with.
+ *
+ * regexCodeDoubleObserved - regex pattern - used to find codes that are 3 digits
+ * long and the observed amount has two digits. For example, 114 49 51 which translates
+ * to SAND13
+ *
+ * regexCodeObserved - regex pattern - used to find codes that are 3 digits
+ * long and the observed amount is a single digits from 0 to 9. For example,
+ * 114 50 translate to SAND2
+ *
+ * regexCodeTripleDigit - regex pattern - used to find the most standard
+ * numerical codes, which are 3 digits long. For example, 114 would be translated
+ * to SAND.
+ *
+ * regexCodeTwoDigitObserved - regex pattern - used to find a two digit
+ * code that has an observed amount.
+ *
+ * file - file object - The file is populateBirdCodes.txt, but the user
+ * must upload this file
+ *
+ * Return:
+ * None
+ ********************************************************************/
 function convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit, regexCodeTwoDigitObserved, regexCodeTwoDigit)
 {
     var newCodesAsStrings = "";
