@@ -147,15 +147,16 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText, fil
     // If you need to change the regex for any of them make sure you update
     // big regex or you will see some weird results
     var newfile = "";
-    var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s+[4,5]\d\s+[4,5]\d\s)|(\d{2}\s[4,5]\d\s*)|(\d{2})|(\d{1}\s+[4,5]\d\s+[4,5]\d)|(\d{1}\s+[4,5]\d)|(\d[1-9])/gm;
+    var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s+[4,5]\d\s+[4,5]\d\s)|(\d{2}\s[4,5]\d\s*)|(\d{2})|(\d{1}\s+[4,5]\d\s+[4,5]\d)|(\d{1}\s+[4,5]\d)|([1-9])/gm;
     //var bigRegex = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})|(\d{2}\s[4,5]\d\s*)|(\d{2})/gm;
     //(\d{2}\s*[4,5]\d)
-    var regexCodeDoubleObserved = /(\d{3}[4,5]\d\s*[4,5]\d\s)/gm; // Regex code when there is a three digit code with 10 or more observed amount
-    var regexCodeObserved = /(\d{3}[4,5]\d\s)/gm; // Regex code when there is a three digit code with an observed amount between 0 and 9
-    var regexCodeTripleDigit = /(\d{3})/gm; // Most standard, just a normal 3 digit code with no observed amount
-    var regexCodeTwoDigitObserved = /(\d{2}\s[4,5]\d\s*)/gm; // Regex code when there is a two digit code with an observed amount from 0 to 9
-    var regexCodeTwoDigit = /(\d{2})/gm; // Standard for 2 digit code with no observations
-    
+    /*var regexCodeDoubleObserved = /(\d{3}[4,5]\d\s*[4,5]\d\s)/gm;   */// Regex code when there is a three digit code with 10 or more observed amount
+    /*var regexCodeObserved = /(\d{3}[4,5]\d\s)/gm;                   */// Regex code when there is a three digit code with an observed amount between 0 and 9
+    /*var regexCodeTripleDigit = /(\d{3})/gm;                         */// Most standard, just a normal 3 digit code with no observed amount
+    /*var regexCodeTwoDigitObserved = /(\d{2}\s[4,5]\d\s*)/gm;        */// Regex code when there is a two digit code with an observed amount from 0 to 9
+    /*var regexCodeTwoDigit = /(\d{2})/gm;                            */// Standard for 2 digit code with no observations
+
+
     console.log(numericalFile);
 
     // converting birdids to ints instead of strings
@@ -192,8 +193,9 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText, fil
                 // what the original file should have looked like. This is as accurate as we are going to get.
                 var arrayOfIds = numericalText.match(bigRegex);
                 newfile += stringMileMarker;
-                newfile += convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit,
-                    regexCodeTwoDigitObserved, regexCodeTwoDigit);
+                newfile += getTranslation(arrayOfIds, bigRegex);
+                /*newfile += convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit,
+                    regexCodeTwoDigitObserved, regexCodeTwoDigit);*/
             }
         }
     }
@@ -207,202 +209,223 @@ function recreateFile(numericalFile, numericalMileMarkers, originalFileText, fil
     createNewFile(newfile, file.name); //  Go to create a new file and save it on the server
 }
 
-/********************************************************************
- * Function Name: Convert Numerical String to Tony's Format
- *
- * Description:
- * This function is used to convert the weird string of numbers to Tony's
- * original formatting. It does this with the help of translation functions.
- * There are 5 cases that we need to look for. These cases are handled
- * and defined by the regex parameters that are sent.
- *
- * Parameters:
- * arrayOfIds - array of strings - elements contain the individual numeric
- * codes. All cases are found in this array because we used bigregex to
- * match them. However, the arrayOfIds is not of the whole numerical text, but
- * instead its only the numerical text of whatever mile marker its associated with.
- *
- * regexCodeDoubleObserved - regex pattern - used to find codes that are 3 digits
- * long and the observed amount has two digits. For example, 114 49 51 which translates
- * to SAND13
- *
- * regexCodeObserved - regex pattern - used to find codes that are 3 digits
- * long and the observed amount is a single digits from 0 to 9. For example,
- * 114 50 translate to SAND2
- *
- * regexCodeTripleDigit - regex pattern - used to find the most standard
- * numerical codes, which are 3 digits long. For example, 114 would be translated
- * to SAND.
- *
- * regexCodeTwoDigitObserved - regex pattern - used to find a two digit
- * code that has an observed amount.
- *
- * file - file object - The file is populateBirdCodes.txt, but the user
- * must upload this file
- *
- * Return:
- * None
- ********************************************************************/
-function convertNumericalToString(arrayOfIds, regexCodeDoubleObserved, regexCodeObserved, regexCodeTripleDigit, regexCodeTwoDigitObserved, regexCodeTwoDigit)
+function getTranslation(arrayOfIds, bigRegex)
 {
-    var newCodesAsStrings = "";
+    var regexThreeDigitCode = /(\d{3}[4,5]\d\s*[4,5]\d\s)|(\d{3}[4,5]\d\s)|(\d{3})/gm;
+    var regexTwoDigitCode = /(\d{2}\s+[4,5]\d\s+[4,5]\d\s)|(\d{2}\s[4,5]\d\s*)|(\d{2})/gm;
+    var regexOneDigitCode = /(\d\s+[4,5]\d\s+[4,5]\d)|(\d\s+[4,5]\d)|(\d)/gm;
+    var resultString = "";
     var OBSERVED_BASE = 48;
 
     for(var i = 0; i < arrayOfIds.length; i++)
     {
-        var numericalCode = arrayOfIds[i];
+        var numericalCode = arrayOfIds[i]; // Storing element in different variable to save integrity
 
-        if(numericalCode.match(regexCodeDoubleObserved))
+        // Three digit codes
+        if(numericalCode.match(regexThreeDigitCode))
         {
-            var observedBirdCode = numericalCode.match(/\d{3}/); // Getting 3 digit code from numerical code
-            numericalCode = numericalCode.replace(observedBirdCode, "");
-
-            // Getting double digit numbers
-            var twoDigitNumber = numericalCode.match(/\d{2}/gm);
-            twoDigitNumber = twoDigitNumber.map(Number);
-            twoDigitNumber[0] = parseInt(twoDigitNumber[0]) - OBSERVED_BASE;
-            twoDigitNumber[1] = parseInt(twoDigitNumber[1]) - OBSERVED_BASE;
-            twoDigitNumber = twoDigitNumber.join();
-            twoDigitNumber = twoDigitNumber.replace(",", "");
-
-            // Finding the birdcode
-            var position = birdids.indexOf(parseInt(observedBirdCode));
-            position = parseInt(position);
-            observedBirdCode = birdcodes[position];
-
-            // Adding spaces to the bird codes that have less than 4 spaces
-            observedBirdCode = formatCodeWithSpaces(observedBirdCode);
-
-            var fullCodeWithObs = "";
-            fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
-            newCodesAsStrings += fullCodeWithObs;
+            console.log("regexThreeDigitCode:\n" + numericalCode);
+            resultString += translateThreeDigitCode(numericalCode, OBSERVED_BASE);
         }
 
-        else if(numericalCode.match(regexCodeObserved))
+        // Two digit codes
+        else if(numericalCode.match(regexTwoDigitCode))
         {
-            newCodesAsStrings += translateThreeDigitCodeObs(numericalCode, OBSERVED_BASE);
+            console.log("regexTwoDigitCode:\n" + numericalCode);
+            resultString += translateTwoDigitCode(numericalCode, OBSERVED_BASE);
         }
 
-        else if(numericalCode.match(regexCodeTripleDigit))
+        // One digit codes
+        else if(numericalCode.match(regexOneDigitCode))
         {
-            newCodesAsStrings += translateThreeDigitCodeNoObs(numericalCode, OBSERVED_BASE);
+            console.log("regexOneDigitCode:\n" + numericalCode);
+            resultString += translateOneDigitCode(numericalCode, OBSERVED_BASE);
         }
 
-        else if(numericalCode.match(regexCodeTwoDigitObserved))
+        else
         {
-            newCodesAsStrings += translateTwoDigitCodes(numericalCode, OBSERVED_BASE, true);
-        }
-
-        else if(numericalCode.match(regexCodeTwoDigit))
-        {
-            newCodesAsStrings += translateTwoDigitCodes(numericalCode, OBSERVED_BASE, false);
+            console.log("Found but not identified:\n" + numericalCode);
         }
     }
 
-    return newCodesAsStrings;
+    return resultString;
 }
 
-// obs is a boolean flag, true means there is an observed amount, false mean there isn't one
-function translateTwoDigitCodes(numericalCode, OBSERVED_BASE, obs)
+function translateThreeDigitCode(numericalCode, OBSERVED_BASE)
 {
-    var resultString = "";
-    var observedBirdCode;
-    var amountObserved;
+    var newCodeAsString = "";
+    var fullCodeWithObs = "";
+    var twoDigitNumber;
     var position;
+    var observedBirdCode;
 
-    // Checking to see if there is an observation
-    if(obs)
+    // Getting birdcode
+    observedBirdCode = numericalCode.match(/\d{3}/);
+
+    if(numericalCode.match(/(\d{3}[4,5]\d\s*[4,5]\d\s)/))
     {
-        // Pulling the first two digit number
-        observedBirdCode = numericalCode.match(/\d{2}/);
-
-        // Getting the second two digit number
-        numericalCode = numericalCode.replace(observedBirdCode, "");
-        amountObserved = numericalCode.match(/\d{2}/);
-
         // Getting birdcode
-        position = birdids.indexOf(parseInt(observedBirdCode));
-        observedBirdCode = birdcodes[position];
-        amountObserved = parseInt(amountObserved) - OBSERVED_BASE;
-        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
 
-        resultString = observedBirdCode + amountObserved;
+        // Getting double digit numbers
+        twoDigitNumber = getObservedAmountTwoDigit(OBSERVED_BASE, numericalCode);
+
+        // Finding the birdcode
+        fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
+        newCodeAsString += fullCodeWithObs;
+    }
+
+    else if(numericalCode.match(/(\d{3}[4,5]\d\s)/))
+    {
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
+
+        // Getting the amount observed
+        twoDigitNumber = getObservedAmountOneDigit(OBSERVED_BASE, numericalCode);
+
+        // Finding the birdcode
+        fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
+        newCodeAsString += fullCodeWithObs;
+    }
+
+    else if(numericalCode.match(/(\d{3})/))
+    {
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
+
+        newCodeAsString += observedBirdCode;
     }
 
     else
     {
-        // Pulling the first two digit number
-        observedBirdCode = numericalCode.match(/\d{2}/);
-        position = birdids.indexOf(parseInt(observedBirdCode));
-        observedBirdCode = birdcodes[position];
-        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
-        resultString = observedBirdCode;
+        console.log("Not sure what this is.");
     }
 
-    return resultString;
+    return newCodeAsString;
 }
 
-function translateThreeDigitCodeNoObs(numericalCode, OBSERVED_BASE)
+function translateTwoDigitCode(numericalCode, OBSERVED_BASE)
 {
-    var resultString = "";
+    var newCodeAsString = "";
+    var fullCodeWithObs = "";
+    var twoDigitNumber;
+    var position;
+    var observedBirdCode;
 
-    var observedBirdCode = numericalCode.match(/\d{3}/);
+    // Getting birdcode
+    observedBirdCode = numericalCode.match(/\d{2}/);
 
-    // Finding the birdcode
-    var position = birdids.indexOf(parseInt(observedBirdCode));
-    position = parseInt(position);
-    observedBirdCode = birdcodes[position];
-
-    observedBirdCode = formatCodeWithSpaces(observedBirdCode);
-
-    resultString = observedBirdCode;
-
-    console.log("resultstringnoobs: \n" + resultString);
-
-    return resultString;
-}
-
-function translateThreeDigitCodeObs(numericalCode, OBSERVED_BASE)
-{
-    var resultString = "";
-
-    // Getting 3 digit code and replacing original text with nothing
-    var observedBirdCode = numericalCode.match(/\d{3}/);
-    numericalCode = numericalCode.replace(observedBirdCode, "");
-
-    // Finding the birdcode
-    var position = birdids.indexOf(parseInt(observedBirdCode));
-    position = parseInt(position);
-    observedBirdCode = birdcodes[position];
-
-    // Getting number observed
-    var observedAmount = numericalCode.match(/\d{2}/);
-    observedAmount = observedAmount.map(Number);
-    observedAmount = parseInt(observedAmount) - OBSERVED_BASE;
-
-    // This is probably a code, not an observation amount
-    if(observedAmount < 0)
+    // A two digit code with observed amount greater than 9
+    if(numericalCode.match(/(\d{2}\s+[4,5]\d\s+[4,5]\d\s)/))
     {
-        var additionalBirdCode = numericalCode.match(/\d{2}/);
-        position = birdids.indexOf(parseInt(additionalBirdCode));
-        position = parseInt(position);
-        additionalBirdCode = birdcodes[position];
-        additionalBirdCode = formatCodeWithSpaces(additionalBirdCode);
-        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
-        resultString = observedBirdCode + additionalBirdCode;
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
 
-        console.log("resultstringwithcorrection: \n" + resultString);
+        // Getting double digit numbers
+        twoDigitNumber = getObservedAmountTwoDigit(OBSERVED_BASE, numericalCode);
+
+        // Finding the birdcode
+        fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
+        newCodeAsString += fullCodeWithObs;
+    }
+
+    // A two digit code with observed amount from 0 - 9
+    else if(numericalCode.match(/(\d{2}\s[4,5]\d\s*)/))
+    {
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
+
+        // Getting the amount observed
+        twoDigitNumber = getObservedAmountOneDigit(OBSERVED_BASE, numericalCode);
+
+        // Finding the birdcode
+        fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
+        newCodeAsString += fullCodeWithObs;
+    }
+
+    // A two digit code with no observed amount
+    else if(numericalCode.match(/(\d{2})/))
+    {
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
+
+        newCodeAsString += observedBirdCode;
     }
 
     else
     {
-        observedBirdCode = formatCodeWithSpaces(observedBirdCode);
-        resultString = observedBirdCode + observedAmount;
-
-        console.log("resultstring: \n" + resultString);
+        console.log("Not really sure what this two digit code is.");
     }
 
-    return resultString;
+    return newCodeAsString;
+}
+
+function translateOneDigitCode(numericalCode, OBSERVED_BASE)
+{
+    // (\d\s+[4,5]\d\s+[4,5]\d)|(\d\s+[4,5]\d)|(\d)
+    var newCodeAsString = "";
+    var fullCodeWithObs = "";
+    var twoDigitNumber;
+    var position;
+    var observedBirdCode;
+
+    // Getting birdcode
+    observedBirdCode = numericalCode.match(/\d{1}/);
+
+    // Single digit codes with an observed amount greater than 9
+    if(numericalCode.match(/(\d\s+[4,5]\d\s+[4,5]\d)/))
+    {
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
+
+        // Getting double digit numbers
+        twoDigitNumber = getObservedAmountTwoDigit(OBSERVED_BASE, numericalCode);
+
+        // Finding the birdcode
+        fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
+        newCodeAsString += fullCodeWithObs;
+    }
+
+    // Single digit codes with an observed amount from 0 - 9
+    else if(numericalCode.match(/(\d\s+[4,5]\d)/))
+    {
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
+
+        // Getting the amount observed
+        twoDigitNumber = getObservedAmountOneDigit(OBSERVED_BASE, numericalCode);
+
+        // Finding the birdcode
+        fullCodeWithObs = observedBirdCode.toString() + twoDigitNumber.toString();
+        newCodeAsString += fullCodeWithObs;
+    }
+
+    // Single digit code with no specified observed amount, assume Tony meant 1
+    else if(numericalCode.match(/(\d)/))
+    {
+        // Getting birdcode
+        numericalCode = numericalCode.replace(observedBirdCode, "");
+        observedBirdCode = findBirdCode(observedBirdCode);
+
+        newCodeAsString += observedBirdCode;
+    }
+
+    else
+    {
+        console.log("Not really sure what this is, its supposed to be a single digit code.");
+    }
+
+    console.log("Here it is: \n" + newCodeAsString);
+
+    return newCodeAsString;
 }
 
 function formatCodeWithSpaces(observedBirdCode)
@@ -502,6 +525,63 @@ function createNewFile(text, filename)
     xhttp.open("POST", "./WriteToFile.php", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("text=" + text + "&filetype=" + "txt" + "&path=" + dir + "&filename=" + filename);
+}
+
+function validNumber(number)
+{
+    if(number < 0)
+    {
+        number = 0;
+    }
+
+    return number;
+}
+
+function findBirdCode(observedBirdCode)
+{
+    var position;
+
+    // Finding the birdcode
+    position = birdids.indexOf(parseInt(observedBirdCode));
+    position = parseInt(position);
+    observedBirdCode = birdcodes[position];
+
+    // Adding spaces to the bird codes that have less than 4 spaces
+    observedBirdCode = formatCodeWithSpaces(observedBirdCode);
+
+    return observedBirdCode;
+}
+
+function getObservedAmountTwoDigit(OBSERVED_BASE, numericalCode)
+{
+    var twoDigitNumber;
+
+    // Getting double digit numbers
+    twoDigitNumber = numericalCode.match(/\d{2}/gm);
+    twoDigitNumber = twoDigitNumber.map(Number);
+    twoDigitNumber[0] = parseInt(twoDigitNumber[0]) - OBSERVED_BASE;
+    twoDigitNumber[1] = parseInt(twoDigitNumber[1]) - OBSERVED_BASE;
+    twoDigitNumber = twoDigitNumber.join();
+    twoDigitNumber = twoDigitNumber.replace(",", "");
+
+    // Making sure its a valid integer
+    twoDigitNumber = parseInt(twoDigitNumber);
+    twoDigitNumber = validNumber(twoDigitNumber);
+
+    return twoDigitNumber;
+}
+
+function getObservedAmountOneDigit(OBSERVED_BASE, numericalCode)
+{
+    var twoDigitNumber;
+
+    // Getting the amount observed
+    twoDigitNumber = numericalCode.match(/\d{2}/);
+    twoDigitNumber = parseInt(twoDigitNumber);
+    twoDigitNumber = twoDigitNumber - OBSERVED_BASE;
+    twoDigitNumber = validNumber(twoDigitNumber);
+
+    return twoDigitNumber;
 }
 
 $(document).ready(function ()
