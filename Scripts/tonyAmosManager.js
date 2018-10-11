@@ -9,8 +9,8 @@ var objMileMarkers;
 var objBirdCodes;
 var totalCodesNotFound = 0;
 var arrayOfObjects = [];
-var start = 1985; // This is the incrementer for the automation loop
-var end = 2001; // Flag to stop the loop
+var start = 1984; // This is the incrementer for the automation loop
+var end = 2010; // Flag to stop the loop
 var automated = false;
 
 //https://www.epochconverter.com/days/1993
@@ -1124,4 +1124,22 @@ function callCSVGeneration(arrayOfPrimaryKeys, index, firstTime)
             console.log("Completed all years.");
         }
     }
+}
+
+// Calling to update bc_date_object on bc_date table
+function callToUpdateDateObject()
+{
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function()
+    {
+        if (this.readyState == 4 && this.status == 200)
+        {
+            console.log(this.responseText);
+        }
+    };
+
+    xhttp.open("POST", "./TonyQuery.php", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("bc_date_object=1");
 }

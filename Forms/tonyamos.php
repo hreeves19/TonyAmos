@@ -214,6 +214,10 @@
                 <p>Use this section for interpreting the numerical files:</p>
                 <input type="file" id="btnUploadNumericalFile" multiple size="50" onchange="btnUploadNumericalFiles()">
             </div>
+            <div>
+                <p>Use this section to update the bc_date_object:</p>
+                <button type="button" onclick="callToUpdateDateObject()">Update Table</button>
+            </div>
         </div>
     </div>
 <?php include '../../TonyAmos/Master/footer.php'; ?>

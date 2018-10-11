@@ -314,4 +314,31 @@ else if(isset($_GET["getDay"]) && isset($_GET["year"]))
 
     echo json_encode(array('data' => $data));
 }
+
+// Updating bc_date_object
+else if(isset($_POST["bc_date_object"]))
+{
+    // Getting bc_date as an array
+    $dateArray = $DB->GET_BC_DATE($dbName);
+    $update = array();
+
+    foreach($dateArray as $key => $value)
+    {
+        $result = "";
+
+        // Assigning temporary variable
+        $date = $value;
+
+        $array = explode("-", $date);
+
+        // Element 0: month, Element 1: day, Element 2: year
+        //$result = $array[1] . "-" . $array[0] . "-" . $array[2];
+        $result = $array[2] . "-" . $array[0] . "-" . $array[1];
+        $newdate = date('Y-m-d', strtotime($result));
+
+        $DB->UPDATE_BC_DATE($dbName, $newdate, $key);
+
+        $result = "";
+    }
+}
 ?>

@@ -5,7 +5,7 @@
  * Date: 8/16/2018
  * Time: 10:22 AM
  */
-require_once 'C:/xampp/htdocs/TonyAmos/Classes/DBHelper.php';
+require_once '../../TonyAmos/Classes/DBHelper.php';
 
 class TonyDBHelper
 {
@@ -228,9 +228,75 @@ class TonyDBHelper
         return true;
     }
 
+    public function UPDATE_BC_DATE($dbName, $data, $primaryKey)
+    {
+        // Getting connection
+        $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
+
+        // Checking to see if the connection failed
+        if($mysqli->connect_errno)
+        {
+            echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+            return false;
+        }
+
+        $sql = "UPDATE `bc_date` SET `bc_date_object` = \"$data\" WHERE `bc_date_ID` = $primaryKey";
+
+        // Checking to see if it works
+        if($mysqli->query($sql) === TRUE)
+        {
+            echo "Record updated successfully";
+        }
+
+        else
+        {
+            echo "Error updating record: " . $mysqli->error;
+        }
+
+        $mysqli->close();
+    }
+
+    public function GET_BC_DATE($dbName)
+    {
+        $dateArray = array();
+
+        // Getting connection
+        $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
+
+        // Checking to see if the connection failed
+        if($mysqli->connect_errno)
+        {
+            echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+            return false;
+        }
+
+        $sql = "SELECT `bc_date_ID`, `bc_date` FROM `bc_date`";
+
+        $response = $mysqli->query($sql);
+
+        if ($response)
+        {
+            while($row = $response->fetch_assoc())
+            {
+                /*$dateArray[] = $row;*/
+                $dateArray[$row["bc_date_ID"]] = $row["bc_date"];
+            }
+        }
+
+        else
+        {
+            echo "Error: " . $sql . "<br>" . $mysqli->error;
+        }
+
+        $mysqli->close();
+
+        return $dateArray;
+    }
+
     public function POPULATE_DATA_TABLE($dbName, $year)
     {
         $data = array();
+
         // Getting connection
         $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
 
@@ -341,6 +407,48 @@ class TonyDBHelper
                 " left join `birdcodes`b on b.`birdcodeID` = w.`bc_birdcode_id`"
                 . " WHERE p.`bc_date` LIKE \"%$year%\"";
         }
+
+        // Executing query and getting the response
+        $response = $mysqli->query($sql);
+
+        // If the response was successful
+        if ($response)
+        {
+            while($row = mysqli_fetch_assoc($response))
+            {
+                $data[] = $row;
+            }
+        }
+
+        else
+        {
+            echo "Error: " . $sql . "<br>" . $mysqli->error;
+        }
+
+        $mysqli->close();
+
+        return $data;
+    }
+
+    public function POPULATE_DATA_TABLE_WHERE($dbName, $statement)
+    {
+        $data = array();
+
+        // Getting connection
+        $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
+
+        // Checking to see if the connection failed
+        if($mysqli->connect_errno)
+        {
+            echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+            return false;
+        }
+
+        $sql = "select `bc_ID`, b.`birdcode`, `bc_observedamount`, `bc_distance`, p.`bc_date`, p.`bc_julianday`,  g.`milemarker` from `bc_observations` w" .
+            " left join `bc_date` p on p.`bc_date_ID` = w.`bc_date_id`" .
+            " left join `milemarkers` g on g.`milemarkerID` = w.`bc_milemarker_id`" .
+            " left join `birdcodes`b on b.`birdcodeID` = w.`bc_birdcode_id`"
+            . " WHERE $statement";
 
         // Executing query and getting the response
         $response = $mysqli->query($sql);
@@ -682,7 +790,7 @@ class TonyDBHelper
 
         if ($result->num_rows > 0)
         {
-            echo "Days in $year <select id = 'ddlDays' onchange='loadDatatableDay()'>";
+            echo "Days in $year <select id = 'ddlDays'>";
             echo "<option value ='" . -1 . "'>Unselected</option>";
             /*echo "<option value ='all'>All Days</option>";*/
             // output data of each row
@@ -752,6 +860,138 @@ class TonyDBHelper
                 // Adding delete button
                 echo "<button type=\"button\" onclick='generateCSV()'>Generate CSV for day selected</button>";
             }
+        }
+
+        // Closing db connection
+        mysqli_close($mysqli);
+    }
+
+    public function GET_DDL_BIRD_CODES($dbName)
+    {
+        // Getting connection
+        $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
+
+        // Checking to see if the connection failed
+        if($mysqli->connect_errno)
+        {
+            echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+            return false;
+        }
+
+        // Creating select statement
+        $sql = "SELECT `birdcodeID`, `birdcode` FROM `birdcodes` ORDER BY `birdcode` ASC";
+        $result = $mysqli->query($sql);
+
+        if ($result->num_rows > 0)
+        {
+            // Initializing the drop down list and setting the first few values
+            echo "<select id = 'ddlBirdCodes'>";
+            echo "<option value ='" . -1 . "'>All</option>";
+
+            // output data of each row
+            while($row = $result->fetch_assoc())
+            {
+                // Do not allow birdcode DEAD
+                if(strcmp($row["birdcode"], "DEAD"))
+                {
+                    echo "<option value ='" . $row["birdcodeID"] . "'>"
+                        . $row["birdcode"] . "</option>";
+                }
+            }
+            echo "</select>";
+        }
+
+        // Closing db connection
+        mysqli_close($mysqli);
+    }
+
+    public function GET_DDL_MILEMARKERS($dbName)
+    {
+        // Getting connection
+        $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
+
+        // Checking to see if the connection failed
+        if($mysqli->connect_errno)
+        {
+            echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+            return false;
+        }
+
+        // Creating select statement
+        $sql = "SELECT `milemarkerID`, `milemarker` FROM `milemarkers`";
+        $result = $mysqli->query($sql);
+
+        if ($result->num_rows > 0)
+        {
+            // Initializing the drop down list and setting the first few values
+            echo "<select id = 'ddlMilemarkers'>";
+            echo "<option value ='" . -1 . "'>All</option>";
+
+            // output data of each row
+            while($row = $result->fetch_assoc())
+            {
+                echo "<option value ='" . $row["milemarkerID"] . "'>"
+                    . $row["milemarker"] . "</option>";
+            }
+            echo "</select>";
+        }
+
+        // Closing db connection
+        mysqli_close($mysqli);
+    }
+
+    public function GET_DDL_MONTH($dbName, $year)
+    {
+        $monthArray = [];
+
+        // Getting connection
+        $mysqli = new mysqli($this->dbhelper->getHost(), $this->dbhelper->getUser(), $this->dbhelper->getPwd(), $dbName);
+
+        // Checking to see if the connection failed
+        if($mysqli->connect_errno)
+        {
+            echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+            return false;
+        }
+
+        // Creating select statement
+        $sql = "SELECT `bc_date_ID`, `bc_date` FROM `bc_date` WHERE `bc_date` LIKE \"%$year%\" ORDER BY `bc_date` ASC";
+        $result = $mysqli->query($sql);
+
+        if ($result->num_rows > 0)
+        {
+            // Initializing the drop down list and setting the first few values
+            echo "Search Month: <select id = 'ddlMonth'>";
+            echo "<option value ='" . "__-__-$year" . "'>Entire Year</option>";
+
+            // output data of each row
+            while($row = $result->fetch_assoc())
+            {
+                // Getting month to an integer
+                $month = $row["bc_date"];
+                $month = substr($month, 0, 2);
+                $value = $month . "-__-$year";
+                $month = (int) $month;
+
+                // Checking to see if in the array
+                if(in_array($month, $monthArray))
+                {
+                    continue;
+                }
+
+                else {
+                    // Storing number in array
+                    array_push($monthArray, $month);
+
+                    // Creating month as date object
+                    $dateObj   = DateTime::createFromFormat('!m', $month);
+                    $monthName = $dateObj->format('F'); // March
+
+                    echo "<option value ='" . $value . "'>"
+                        . $monthName . "</option>";
+                }
+            }
+            echo "</select>";
         }
 
         // Closing db connection
