@@ -214,6 +214,7 @@ else if(isset($_POST["arrayOfPrimaryKeys"]) && isset($_POST["year"]))
     }
 }
 
+// Write to any file by specifying the text, filetype, path, and the filename
 else if(isset($_POST["text"]) && isset($_POST["filetype"]) && isset($_POST["path"]) && isset($_POST["filename"]))
 {
     $text = $_POST["text"];

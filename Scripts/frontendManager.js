@@ -2,7 +2,7 @@
  * Function Name: Document Ready
  *
  * Description:
- * This function loads as soon as the frontEndTest.php page loads.
+ * This function loads as soon as the TonyAmosCollection.php page loads.
  * It will hide the datatable and check the "no" radio buttons.
  *
  * Parameters:
@@ -121,7 +121,7 @@ function loadDatatable(query)
     });
 }
 
-function ddlYearChanges()
+/*function ddlYearChanges()
 {
     // Getting the select tag and its value
     var selectTag = document.getElementById("ddlYears");
@@ -129,10 +129,10 @@ function ddlYearChanges()
     year = parseInt(year);
 
     callGetDDLYear(year);
-    /*callGetDDLMonth(year);*/
-}
+    /!*callGetDDLMonth(year);*!/
+}*/
 
-function callGetDDLYear()
+/*function callGetDDLYear()
 {
     var selectTag = document.getElementById("ddlYears");
     var year = selectTag.options[selectTag.selectedIndex].value;
@@ -151,9 +151,9 @@ function callGetDDLYear()
     xhttp.open("POST", "./TonyQuery.php", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("getDDL=" + year);
-}
+}*/
 
-function callGetDDLMonth(year)
+/*function callGetDDLMonth(year)
 {
     var xhttp = new XMLHttpRequest();
 
@@ -168,8 +168,20 @@ function callGetDDLMonth(year)
     xhttp.open("POST", "../../TonyAmos/Library/processQuery.php", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("year=" + year + "&ddlMonth=1");
-}
+}*/
 
+/********************************************************************
+ * Function Name: Process Search
+ *
+ * Description:
+ * This function is used to process the search parameters by the user.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * Displays data table on the page
+ ********************************************************************/
 function processSearch()
 {
     // Conditions for submitting search
@@ -181,10 +193,13 @@ function processSearch()
     // Checking if date is selected
     if(document.getElementById("to").value !== "" || document.getElementById("from").value !== "")
     {
-        monthSelected = true;
-
         // Getting sql select statement
         query = buildSQLQuery();
+    }
+
+    else
+    {
+        alert("Please specify either a date or a range of dates.");
     }
 
     console.log(query);
@@ -194,13 +209,21 @@ function processSearch()
     {
         loadDatatable(query);
     }
-
-    else
-    {
-        alert("Invalid search parameters for calender. You must select a valid date.");
-    }
 }
 
+/********************************************************************
+ * Function Name: Build SQL Query
+ *
+ * Description:
+ * This function is used to build the where clause of the select statement
+ * for the query. This defines the search parameters.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * result   string  The where clause of the query
+ ********************************************************************/
 function buildSQLQuery()
 {
     // Local variables and getting month
@@ -231,11 +254,36 @@ function buildSQLQuery()
         toDate = convertStringToDate(toDate);
         result = "p.`bc_date_object` BETWEEN \"" + fromDate + "\" AND \"" + toDate + "\"";
     }
+
+    // If calenders equal each other
     else if(fromDate !== "" && toDate !== "" && fromDate === toDate)
     {
         // Formatting string to date object
         fromDate = convertStringToDate(fromDate);
         result = "p.`bc_date_object` = '" + fromDate + "'";
+    }
+
+    // If just fromDate is selected
+    else if(fromDate !== "" && toDate === "")
+    {
+        // Formatting string to date object
+        fromDate = convertStringToDate(fromDate);
+        result = "p.`bc_date_object` = '" + fromDate + "'";
+    }
+
+    // If just toDate is selected
+    else if(fromDate === "" && toDate !== "")
+    {
+        // Formatting string to date object
+        toDate = convertStringToDate(toDate);
+        result = "p.`bc_date_object` = '" + toDate + "'";
+    }
+
+    else if(fromDate === "" && toDate === "")
+    {
+        alert("Please specify either a date or a range of dates.");
+        result = "";
+        return result;
     }
 
     // Bird code
@@ -293,15 +341,11 @@ function buildSQLQuery()
 
             else
             {
+                alert("Invalid input for the distances. Distance from needs to be less than distance to.");
                 result = "";
                 return result;
             }
         }
-    }
-
-    else
-    {
-        alert("")
     }
 
     // Dead bird rad checked yes
@@ -342,16 +386,56 @@ function buildSQLQuery()
     return result;
 }
 
+/********************************************************************
+ * Function Name: Validates Search Box
+ *
+ * Description:
+ * This function tests a checkbox to make sure that there are only
+ * digits in it.
+ *
+ * Parameters:
+ * value    string  the input inside the text box
+ *
+ * Return:
+ * true if it passes, false if not
+ ********************************************************************/
 function validateSearchBox(value)
 {
     return /^\d+$/.test(value);
 }
 
+/********************************************************************
+ * Function Name: Validate Number
+ *
+ * Description:
+ * This function is used to validate a number.
+ *
+ * Parameters:
+ * value        int      Should be the value in the text boxes (should
+ *                       have been converted to an integer)
+ *
+ * Return:
+ * true if it passes, false if not
+ ********************************************************************/
 function validateNumber(value)
 {
     return value >= 0;
 }
 
+/********************************************************************
+ * Function Name: Convert String to Date
+ *
+ * Description:
+ * This function is used to convert the dates that are formatted from
+ * the date picker plugin.
+ *
+ * Parameters:
+ * date        string       The value shown in the date text boxes
+ *                          (MM/DD/YYYY)
+ *
+ * Return:
+ * The converted string in SQL date formatting (YYYY-MM-DD)
+ ********************************************************************/
 function convertStringToDate(date)
 {
     var result = date.split("/");

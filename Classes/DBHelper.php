@@ -19,7 +19,7 @@ Return value(s):
 class DBHelper
 {
     //Members
-     static protected $ini_dir = "Bandocat_config\\bandoconfig.ini";
+     static protected $ini_dir = "TonyAmos_config\\tonyconfig.ini";
      protected $host;
      protected $user;
      protected $pwd;
@@ -69,8 +69,8 @@ class DBHelper
 
     function DB_CONNECT($db)
     {
-        if ($db == "" || $db == null) //empty parameter = default = bandocatdb
-            $db = "bandocatdb";
+        if ($db == "" || $db == null) //empty parameter = default = tonyamosdb
+            $db = "tonyamosdb";
         /* assign conn as a PHP Data Object, concat the host, user and pwd */
         $this->conn = new PDO('mysql:host=' . $this->getHost() . ';dbname=' . $db, $this->getUser(), $this->getPwd());
         return 0;

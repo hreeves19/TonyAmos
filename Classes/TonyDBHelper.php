@@ -70,6 +70,19 @@ class TonyDBHelper
         return $this->arrayDaysMileMarker;
     }
 
+    /********************************************************************
+     * Function Name: Get Day and Date
+     *
+     * Description:
+     * This function is used to get all the days within a year
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * year         string      the year YYYY
+     *
+     * Return:
+     * An array with the primary key, the date, and the yearday
+     ********************************************************************/
     public function GET_DAY_AND_DATE($dbName, $year)
     {
         $data = array();
@@ -106,6 +119,21 @@ class TonyDBHelper
         return $data;
     }
 
+    /********************************************************************
+     * Function Name: Insert Into Bird Codes
+     *
+     * Description:
+     * This function was called once to insert all the bird codes into the
+     * database. This function has to be called 367 times because there are
+     * 367 bird codes.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * birdCode     string      CLOO, PBG, EGRB, ....
+     *
+     * Return:
+     * True if successful, false if not
+     ********************************************************************/
     public function INSERT_INTO_BIRD_CODES($id, $birdCode, $birdCodeDescription, $dbName, $tableName)
     {
         // Getting connection

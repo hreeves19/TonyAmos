@@ -945,7 +945,18 @@ function chunkArray(myArray, chunk_size)
     return tempArray;
 }
 
-// Calling server to populate a drop down list that contains the day of the year selected
+/********************************************************************
+ * Function Name: Get DDL Day
+ *
+ * Description:
+ * Calling server to populate a drop down list that contains the day of the year selected.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * Displays a DDL of all the days. Either for CSV generation or for divResponse
+ ********************************************************************/
 function getDDLDay()
 {
     var xhttp = new XMLHttpRequest();
@@ -981,7 +992,18 @@ function getDDLDay()
     }
 }
 
-// Calling TonyQuery.php to delete day from bc_observations and bc_date
+/********************************************************************
+ * Function Name: Delete From DB
+ *
+ * Description:
+ * Calling TonyQuery.php to delete day from bc_observations and bc_date.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * Deletes a record from the db, displays server response to user
+ ********************************************************************/
 function deleteFromDB()
 {
     document.getElementById("databaseResponse").innerHTML = "";
@@ -1001,6 +1023,19 @@ function deleteFromDB()
     xhttp.send("deleteRecordDay=" + document.getElementById("ddlDays").value);
 }
 
+/********************************************************************
+ * Function Name: Populate DDL For Insertion
+ *
+ * Description:
+ * Creating a DDL for insertion to the database. This comes from the
+ * SortedData folder.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * Shows a ddl
+ ********************************************************************/
 function populateDDLForInsertion()
 {
     var xhttp = new XMLHttpRequest();
@@ -1018,7 +1053,18 @@ function populateDDLForInsertion()
     xhttp.send("getFilesFromYear=" + document.getElementById("ddlYearsForInsertion").value);
 }
 
-// Calling TonyQuery.php to insert day to bc_observations and bc_date
+/********************************************************************
+ * Function Name: Insert One Day to Database
+ *
+ * Description:
+ * Calling TonyQuery.php to insert a day to bc_observations and bc_date.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * Inserts a record into the db, displays server response to user
+ ********************************************************************/
 function insertOneDayToDB()
 {
     var xhttp = new XMLHttpRequest();
@@ -1039,7 +1085,18 @@ function insertOneDayToDB()
     xhttp.send("insertRecordDay=" + document.getElementById("ddlDaysToInsert").value + "&year=" + document.getElementById("ddlYearsForInsertion").value);
 }
 
-// Calling server to check if any days are missing
+/********************************************************************
+ * Function Name: Check DB For Missing Records
+ *
+ * Description:
+ * Calling server to check if any days are missing.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * Prints the response to console log
+ ********************************************************************/
 function checkDBForMissedRecords()
 {
     var xhttp = new XMLHttpRequest();
@@ -1063,6 +1120,18 @@ function generateCSV()
     getDataForCSVGeneration();
 }
 
+/********************************************************************
+ * Function Name: Get Data For CSV Generation
+ *
+ * Description:
+ * Calling TonyQuery.php to get the primary key of the dates in the database.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * None
+ ********************************************************************/
 function getDataForCSVGeneration()
 {
     console.log("Generating CSV for year " + start + "....");
@@ -1085,6 +1154,20 @@ function getDataForCSVGeneration()
     xhttp.send("GET_PRIMARYKEYS_DAYS=" + true + "&yearCSV=" + start);
 }
 
+/********************************************************************
+ * Function Name: Call CSV Generation (a recursive function)
+ *
+ * Description:
+ * Calling WriteToFile.php to generate CSV files in chunks (sending primary keys
+ * of 25 days).
+ *
+ * Parameters:
+ * arrayOfPrimaryKeys       array       an array of primary keys of dates
+ * index                    int         position of the loop
+ *
+ * Return:
+ * Calls itself until finished. Automates from 1984 to 2010.
+ ********************************************************************/
 function callCSVGeneration(arrayOfPrimaryKeys, index, firstTime)
 {
     console.log("Sending request " + index + "....");
@@ -1126,6 +1209,20 @@ function callCSVGeneration(arrayOfPrimaryKeys, index, firstTime)
     }
 }
 
+/********************************************************************
+ * Function Name: Update Date Object in DB
+ *
+ * Description:
+ * Calling TonyQuery.php to update the date object in the database.
+ * Later into the project, I needed a date object into the bc_date table.
+ * I used this function to update the bc_date_object.
+ *
+ * Parameters:
+ * None
+ *
+ * Return:
+ * Shows the server response in the console.
+ ********************************************************************/
 // Calling to update bc_date_object on bc_date table
 function callToUpdateDateObject()
 {
