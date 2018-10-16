@@ -172,6 +172,21 @@ class TonyDBHelper
         return true;
     }
 
+    /********************************************************************
+     * Function Name: Insert Into BC Date
+     *
+     * Description:
+     * This function is used to insert a new record into the bc_date table.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * yearDay      string      001, 002, 277, ...
+     * date         string      01-01-1985
+     * julianDay    int         2446067, look up definition of julian day on internet
+     *
+     * Return:
+     * True if successful, false if not
+     ********************************************************************/
     public function INSERT_INTO_BC_DATE($yearday, $date, $julianday, $milemarker, $dbname)
     {
         // Getting connection
@@ -205,6 +220,22 @@ class TonyDBHelper
         return true;
     }
 
+    /********************************************************************
+     * Function Name: Insert Into Observations
+     *
+     * Description:
+     * This function is used to insert a new observation record.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * code         string      CLOO, PBG, EGRB, ....
+     * julianDay    int         2446067, look up definition of julian day on internet
+     * distance     int         distance in meters
+     * milemarker   int         1, 2, 3, ..., 12
+     *
+     * Return:
+     * True if successful, false if not
+     ********************************************************************/
     public function INSERT_INTO_BC_OBSERVATIONS($code, $amountFound, $date, $julianday, $distance, $milemarker, $day, $dup, $dbname)
     {
         // Getting connection
@@ -256,6 +287,21 @@ class TonyDBHelper
         return true;
     }
 
+    /********************************************************************
+     * Function Name: Update Dates Table
+     *
+     * Description:
+     * This function was used once to update the bc_date table column bc_
+     * date_object. The reason for this, is because I added this variable
+     * to the table later into the project.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * data         string      YYYY-MM-DD
+     * primarykey   int         primary key to bc_date table where data needs to go
+     * Return:
+     * None
+     ********************************************************************/
     public function UPDATE_BC_DATE($dbName, $data, $primaryKey)
     {
         // Getting connection
@@ -284,6 +330,21 @@ class TonyDBHelper
         $mysqli->close();
     }
 
+    /********************************************************************
+     * Function Name: Get Date
+     *
+     * Description:
+     * This function is used to return the column bc_date_ID and bc_date
+     * from the bc_date table. Basically, we are getting the primary key
+     * and the date as a string (not date object, format is MM-DD-YYYY).
+     * This is getting all rows from the bc_date table.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     *
+     * Return:
+     * dataArray    array       Stored are all the rows from the select statement
+     ********************************************************************/
     public function GET_BC_DATE($dbName)
     {
         $dateArray = array();
@@ -321,6 +382,19 @@ class TonyDBHelper
         return $dateArray;
     }
 
+    /********************************************************************
+     * Function Name: Populate Data Table (Whole Year)
+     *
+     * Description:
+     * This function is used to return the rows of an entire year of observations.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * year         int         YYYY (1985, 1986, ..., 2010)
+     *
+     * Return:
+     * data         array       Stored are all the rows from the select statement
+     ********************************************************************/
     public function POPULATE_DATA_TABLE($dbName, $year)
     {
         $data = array();
@@ -361,6 +435,20 @@ class TonyDBHelper
         return $data;
     }
 
+    /********************************************************************
+     * Function Name: Get CSV Table
+     *
+     * Description:
+     * This function is used to return the rows of an entire day of observations.
+     * This is used for CSV generation.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * primarykey   int         the primary key of the day from bc_date table
+     *
+     * Return:
+     * data         array       Stored are all the rows from the select statement
+     ********************************************************************/
     public function GET_CSV_TABLE($dbName, $primaryKey)
     {
         $data = array();
@@ -403,6 +491,21 @@ class TonyDBHelper
         return $data;
     }
 
+    /********************************************************************
+     * Function Name: Populate Data Table (Whole Day)
+     *
+     * Description:
+     * This function is used to return the rows of an entire day of observations.
+     * Can do day or year though.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * year         int         YYYY (1985, 1986, ..., 2010)
+     * primaryKey   int         primary key from the bc_date table
+     *
+     * Return:
+     * data         array       Stored are all the rows from the select statement
+     ********************************************************************/
     public function POPULATE_DATA_TABLE_DAY($dbName, $primaryKey, $year)
     {
         $data = array();
@@ -458,6 +561,19 @@ class TonyDBHelper
         return $data;
     }
 
+    /********************************************************************
+     * Function Name: Populate Data Table (With Where Statement)
+     *
+     * Description:
+     * This function is used to return the rows of an entire year of observations.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * statement    string      the where clause, this is from the advanced search
+     *
+     * Return:
+     * data         array       Stored are all the rows from the select statement
+     ********************************************************************/
     public function POPULATE_DATA_TABLE_WHERE($dbName, $statement)
     {
         $data = array();
@@ -500,6 +616,18 @@ class TonyDBHelper
         return $data;
     }
 
+    /********************************************************************
+     * Function Name: Get All Bird Codes
+     *
+     * Description:
+     * This function is used to return all the bird codes (LGUL, SAND, HGUL, etc.).
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     *
+     * Return:
+     * False if sql failed, true if it passes
+     ********************************************************************/
     public function GET_ALL_BIRD_CODES($dbName)
     {
         // Getting connection
@@ -536,6 +664,18 @@ class TonyDBHelper
         return true;
     }
 
+    /********************************************************************
+     * Function Name: Get All Bird Ids
+     *
+     * Description:
+     * This function is used to get all bird ids from the database (001, 002, etc.).
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     *
+     * Return:
+     * True if SQL doesn't fail, false if it does
+     ********************************************************************/
     public function GET_ALL_BIRD_IDS($dbName)
     {
         // Getting connection
@@ -572,6 +712,19 @@ class TonyDBHelper
         return true;
     }
 
+    /********************************************************************
+     * Function Name: Get Year File
+     *
+     * Description:
+     * This function is used to return the days of the year in the file
+     * system. This is in SorteData, stores the days in arrayDays.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     *
+     * Return:
+     * None
+     ********************************************************************/
     public function GET_YEAR_FILE($year)
     {
         /*C:/xampp2/htdocs/BandoCat/tonyamos/SortedData/BCHobs2/BDZ$year*/
@@ -593,6 +746,20 @@ class TonyDBHelper
         }
     }
 
+    /********************************************************************
+     * Function Name: Get Primary Keys
+     *
+     * Description:
+     * This function gets all the primary keys from the bc_date table by
+     * its year (getting the days in the years).
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * year         int         YYYY (1985, 1986, 1987)
+     *
+     * Return:
+     * data         array       Stored are all the rows from the select statement
+     ********************************************************************/
     public function GET_PRIMARYKEYS_OF_DAY_FROM_YEAR($dbName, $year)
     {
         $data = array();
@@ -632,6 +799,20 @@ class TonyDBHelper
         return $data;
     }
 
+    /********************************************************************
+     * Function Name: Get DDL (Drop Down List) Files by Year
+     *
+     * Description:
+     * This function is used to create a drop down list of all the files (days)
+     * in a year. This is used for inserting a sorted file into the database, one
+     * day at a time.
+     *
+     * Parameters:
+     * year         int         YYYY
+     *
+     * Return:
+     * Displays a drop down list with the days from a year
+     ********************************************************************/
     public function GET_DDL_FILES_BY_YEAR($year)
     {
         // Path to the directory
@@ -665,6 +846,21 @@ class TonyDBHelper
         }
     }
 
+    /********************************************************************
+     * Function Name: Get Mile Marker File From Year
+     *
+     * Description:
+     * This function gets the contents of a day. In other words, when you open a year and
+     * open up a day folder under the SortedData folder, you will find the mile
+     * marker files (0_M0, 1_M1, etc.). This files get the contents of those for an
+     * entire year.
+     *
+     * Parameters:
+     * year         int         YYYY
+     *
+     * Return:
+     * Stores this information in an array (arrayDaysMileMarker)
+     ********************************************************************/
     public function GET_MILE_MARKER_FILE_FROM_YEAR($year)
     {
         /*C:/xampp2/htdocs/BandoCat/tonyamos/SortedData/BCHobs2/BDZ$year*/
@@ -720,6 +916,20 @@ class TonyDBHelper
         }
     }
 
+    /********************************************************************
+     * Function Name: Get Mile Marker File From Day
+     *
+     * Description:
+     * Same thing as the previous function, but instead of a year, it does
+     * it for a day.
+     *
+     * Parameters:
+     * fileName     string      name of the file (the day)
+     * year         int         YYYY (1985, 1986, 1987)
+     *
+     * Return:
+     * Stores this information in an array (arrayDaysMileMarker)
+     ********************************************************************/
     public function GET_MILE_MARKER_FILE_FROM_DAY($year, $filename)
     {
         // Directory to the day
@@ -752,6 +962,18 @@ class TonyDBHelper
         }
     }
 
+    /********************************************************************
+     * Function Name: Get All File Names
+     *
+     * Description:
+     * Gets the name of every file from 1985 to 2010.
+     *
+     * Parameters:
+     * None
+     *
+     * Return:
+     * Stores the name of the files in allFiles array
+     ********************************************************************/
     public function GET_ALL_FILE_NAMES()
     {
         // Initializing years and array to hold the result of the search
@@ -800,6 +1022,20 @@ class TonyDBHelper
         }
     }
 
+    /********************************************************************
+     * Function Name: Get DDL Years
+     *
+     * Description:
+     * Displays a drop down list of the years in the database by ascending
+     * order.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * year         int         YYYY (1985, 1986, 1987)
+     *
+     * Return:
+     * Displays a drop down list with the years.
+     ********************************************************************/
     public function GET_DDL_YEARS($dbName, $year)
     {
         // Getting connection
@@ -843,6 +1079,21 @@ class TonyDBHelper
         return true;
     }
 
+    /********************************************************************
+     * Function Name: Get DDL Days
+     *
+     * Description:
+     * This function returns a drop down list of the days that are found
+     * in a year (from the database).
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * year         int         YYYY (1985, 1986, 1987)
+     * delete       boolean     determines if the drop down list will delete or for CSV generation
+     *
+     * Return:
+     * A drop down list from all the days in the database
+     ********************************************************************/
     public function GET_DDL_DAYS($dbName, $year, $delete)
     {
         // Getting connection
@@ -894,6 +1145,19 @@ class TonyDBHelper
         mysqli_close($mysqli);
     }
 
+    /********************************************************************
+     * Function Name: Get DDL Bird Codes
+     *
+     * Description:
+     * This function will show a drop down list with all the bird codes
+     * that are in the database.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     *
+     * Return:
+     * Drop down list with all bird codes (LGUL, SAND, HGUL)
+     ********************************************************************/
     public function GET_DDL_BIRD_CODES($dbName)
     {
         // Getting connection
@@ -933,6 +1197,19 @@ class TonyDBHelper
         mysqli_close($mysqli);
     }
 
+    /********************************************************************
+     * Function Name: Get DDL Mile Markers
+     *
+     * Description:
+     * This function shows all the mile markers in a drop down list
+     * that come from the database.
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     *
+     * Return:
+     * Show drop down list with mile markers
+     ********************************************************************/
     public function GET_DDL_MILEMARKERS($dbName)
     {
         // Getting connection
@@ -968,6 +1245,20 @@ class TonyDBHelper
         mysqli_close($mysqli);
     }
 
+    /********************************************************************
+     * Function Name: Get DDL Month
+     *
+     * Description:
+     * Used to show all the months in a year from the database in a DDL(only show
+     * the months that Tony recorded observations in).
+     *
+     * Parameters:
+     * dbName       string      name of the database
+     * year         int         YYYY (1985, 1986, 1987)
+     *
+     * Return:
+     * Show a DDL with all the months found in the specified year
+     ********************************************************************/
     public function GET_DDL_MONTH($dbName, $year)
     {
         $monthArray = [];
@@ -1026,7 +1317,19 @@ class TonyDBHelper
         mysqli_close($mysqli);
     }
 
-    // This function will delete the day from the bc_date table
+    /********************************************************************
+     * Function Name: Delete Day
+     *
+     * Description:
+     * This function will delete the day from the bc_date table.
+     *
+     * Parameters:
+     * dbName           string      name of the database
+     * dayPrimaryKey    int         primary key of the day to be deleted from the bc_date table
+     *
+     * Return:
+     * False if failed, true if successful
+     ********************************************************************/
     public function DELETE_DAY($dbName, $dayPrimaryKey)
     {
         // Getting connection
@@ -1064,6 +1367,19 @@ class TonyDBHelper
     }
 
     // Will delete all records from a particular day. The foreign key is the primary key of the bc_date table.
+    /********************************************************************
+     * Function Name: Delete Day
+     *
+     * Description:
+     * Will delete all records from a particular day. The foreign key is the primary key of the bc_date table.
+     *
+     * Parameters:
+     * dbName           string      name of the database
+     * foreignKey       int         the foreign key (bc_date_id) to the bc_observation table
+     *
+     * Return:
+     * False if failed, true if successful
+     ********************************************************************/
     public function DELETE_ALL_OBSERVATIONS_BY_DAY($dbName, $foreignkey)
     {
         // Getting connection
