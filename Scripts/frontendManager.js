@@ -232,6 +232,8 @@ function buildSQLQuery()
     var checkInj = $('#radInjYes').prop('checked');
     var checkMile = $('#radMileYes').prop('checked');
 
+    console.log(checkDead);
+
     // Getting birdcode
     var selectTagBirdCode = document.getElementById("ddlBirdCodes");
     var birdcodeNumber = selectTagBirdCode.options[selectTagBirdCode.selectedIndex].value;
@@ -349,7 +351,7 @@ function buildSQLQuery()
     }
 
     // Dead bird rad checked yes
-    if(checkDead === true && checkInj !== false)
+    if(checkDead === true)
     {
         result += " AND w.`bc_ID` = ANY (SELECT `bc_ID` - 1 FROM `bc_observations` WHERE `bc_birdcode_id` = 51)";
     }
@@ -360,7 +362,7 @@ function buildSQLQuery()
     }
 
     // Injured bird rad checked yes
-    if(checkInj === true && checkInj !== false)
+    if(checkInj === true)
     {
         result += " AND w.`bc_ID` = ANY (SELECT `bc_ID` - 1 FROM `bc_observations` WHERE `bc_birdcode_id` = 46)";
     }
